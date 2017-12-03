@@ -2,6 +2,7 @@ import {
   MOVIES_SET_DISCOVER_RESULTS,
   MOVIES_SET_NOW_PLAYING_MOVIES,
   MOVIES_SET_SEARCH_RESULTS,
+  MOVIES_SET_SELECTED_MEDIA,
   MOVIES_SET_USAGE
 } from './mutation-types.js';
 import {HTTP} from '../../http.js';
@@ -21,6 +22,7 @@ export default {
     topRatedMovies: [],
     upcomingMovies: [],
     nowPlayingMovies: [],
+    selectedMedia: false,
     usage: {
       remaining: 40,
       reset: new Date(),
@@ -38,6 +40,9 @@ export default {
     },
     [MOVIES_SET_NOW_PLAYING_MOVIES](state, movies) {
       state.nowPlayingMovies = movies;
+    },
+    [MOVIES_SET_SELECTED_MEDIA](state, media) {
+      state.selectedMedia = media;
     },
     [MOVIES_SET_USAGE](state, usage) {
       state.usage = usage;
@@ -62,6 +67,9 @@ export default {
       HTTP.get(`/movie/now_playing?api_key=${api_key}`).then(res => {
         commit(MOVIES_SET_NOW_PLAYING_MOVIES, res.results);
       });
+    },
+    setSelectedMedia({commit}, media) {
+      commit(MOVIES_SET_SELECTED_MEDIA, media);
     },
     updateUsage({commit}, usage) {
       commit(MOVIES_SET_USAGE, usage);

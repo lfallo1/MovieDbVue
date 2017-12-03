@@ -43,13 +43,27 @@
 
     </div>
 
-    <div id="now-playing-wrapper">
-      <h4>Now Playing</h4>
-      <ul id="now-playing" class="list-group list-group-horizontal">
-        <li class="list-group-item" v-for="movie in nowPlayingMovies">
-          <app-movieimage-subtitle :movie="movie"></app-movieimage-subtitle>
-        </li>
-      </ul>
+    <div class="row">
+      <div class="col-md-3">
+        <div id="now-playing-wrapper">
+          <h4>Now Playing</h4>
+          <ul id="now-playing" class="list-group list-group-horizontal">
+            <li class="list-group-item" v-for="movie in nowPlayingMovies">
+              <app-movieimage-subtitle :movie="movie"></app-movieimage-subtitle>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="class col-md-6">
+        <div id="selectedMovie" v-if="selectedMedia">
+          <div class="well">
+            <img class="thumbnail" :src="'https://image.tmdb.org/t/p/original/' + selectedMedia.poster_path">
+            <div>
+              <strong>{{selectedMedia.original_title}}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -83,7 +97,8 @@
     computed: {
       ...mapState({
         nowPlayingMovies: state => state.movies.nowPlayingMovies,
-        multiSearchResults: state => state.movies.multiSearchResults
+        multiSearchResults: state => state.movies.multiSearchResults,
+        selectedMedia: state => state.movies.selectedMedia
       })
     },
     created() {
