@@ -50,6 +50,7 @@ export default {
   },
   actions: {
     multiSearch({commit}, query) {
+      commit(MOVIES_SET_SEARCH_RESULTS, {movies: [], actors: [], tvShows: []});
       HTTP.get(`/search/multi?api_key=${api_key}&query=${query}`).then(res => {
         const data = {
           movies: res.results.filter(r => r.media_type === 'movie'),
@@ -69,7 +70,13 @@ export default {
       });
     },
     setSelectedMedia({commit}, media) {
-      commit(MOVIES_SET_SELECTED_MEDIA, media);
+      return new Promise((resolve, reject) => {
+        HTTP.get(`/movie/${media.id}/credits?api_key=${api_key}`).then(res => {
+          media.actors = res.cast;
+          commit(MOVIES_SET_SELECTED_MEDIA, media);
+          resolve();
+        }, err => reject());
+      });
     },
     updateUsage({commit}, usage) {
       commit(MOVIES_SET_USAGE, usage);

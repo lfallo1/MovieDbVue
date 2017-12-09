@@ -1,24 +1,35 @@
+//vue
 import Vue from "vue";
+
+//plugins
 import VueRouter from 'vue-router';
 import VueMaterial from 'vue-material'
 import 'vue-material/dist/vue-material.css'
 import Toasted from 'vue-toasted';
+import BootstrapVue from 'bootstrap-vue'
+import VModal from 'vue-js-modal'
+
+//vuex / routes
 import store from './store/store.js';
 import routes from './routes.js';
-import BootstrapVue from 'bootstrap-vue'
-import App from './components/App.vue'
-import Modal from 'modal-vue';
 
+//bootstrap
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
+//components
+import App from './components/App.vue'
+import SelectedMediaModal from './components/Modals/SelectedMediaModal.vue'
+
+//register plugins
 Vue.use(BootstrapVue);
 Vue.use(VueMaterial);
 Vue.use(Toasted);
 Vue.use(VueRouter);
+Vue.use(VModal, {dialog: true});
 
-//add components
-Vue.component('modal', Modal);
+//register global components
+// Vue.component('selected-media-modal', SelectedMediaModal);
 
 //optional eventBus
 export const eventBus = new Vue();

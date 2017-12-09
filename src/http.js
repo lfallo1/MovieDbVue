@@ -19,7 +19,7 @@ HTTP.interceptors.response.use(function (response) {
         reset: new Date(Number(response.headers['x-ratelimit-reset']) * 1000),
         retryAfter: false
     });
-    return {results: response.data.results}
+    return response.data;
 }, function (error) {
     if (error.status === 429) {
         store.dispatch('movies/updateUsage', {

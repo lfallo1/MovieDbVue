@@ -7,72 +7,47 @@
         <span>{{multiSearchText}}</span>
         <input v-model="multiSearchText" type="text" class="form-control"
                placeholder="Search movies, actors, and tv shows" aria-describedby="search-addon">
-        <span @click="performMultiSearch" class="btn btn-success input-group-addon" id="search-addon"><i
-          class="material-icons">youtube_searched_for</i>Search</span>
+        <span @click="performMultiSearch" class="btn btn-success input-group-addon" id="search-addon">Search</span>
       </div>
     </div>
 
-    <div>
-
-
-      <ul class="list-group" v-for="result in multiSearchResults.movies">
-        <li class="list-group-item">
-          <app-movieimage-subtitle :movie="result"></app-movieimage-subtitle>
-        </li>
-      </ul>
-
-      <table class="table">
-        <tbody>
-        <tr v-for="result in multiSearchResults.actors">
-          <td><img v-if="result.profile_path" :src="'https://image.tmdb.org/t/p/original/' + result.profile_path" width="60px"/></td>
-          <td>{{result.name}}</td>
-          <td>
-            <div v-for="item in result.known_for">
-              {{item.original_title}}
-            </div>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-
-      <div v-for="result in multiSearchResults.tvShows">
-        <small>TV Show name: </small>
-        <strong>{{result.original_name}}</strong>
-        <img :src="'https://image.tmdb.org/t/p/original/' + result.poster_path" width="100px"/>
-      </div>
-
+    <div class="row" v-show="multiSearchResults.actors">
+      <app-actorsummary :actor="actor" v-for="actor in multiSearchResults.actors"/>
     </div>
+
+    <!--<div class="col-md-4">-->
+    <!--<div id="selectedMovie" v-if="selectedMedia">-->
+    <!--<div class="well">-->
+    <!--<img class="thumbnail" :src="'https://image.tmdb.org/t/p/original/' + selectedMedia.poster_path">-->
+    <!--<div>-->
+    <!--<strong>{{selectedMedia.original_title}}</strong>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
 
     <div class="row">
-      <div class="col-md-3">
-        <div id="now-playing-wrapper">
-          <h4>Now Playing</h4>
-          <ul id="now-playing" class="list-group list-group-horizontal">
-            <li class="list-group-item" v-for="movie in nowPlayingMovies">
-              <app-movieimage-subtitle :movie="movie"></app-movieimage-subtitle>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div class="class col-md-6">
-        <div id="selectedMovie" v-if="selectedMedia">
-          <div class="well">
-            <img class="thumbnail" :src="'https://image.tmdb.org/t/p/original/' + selectedMedia.poster_path">
-            <div>
-              <strong>{{selectedMedia.original_title}}</strong>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!--<div class="col-md-3">-->
+      <!--<div id="now-playing-wrapper">-->
+      <!--<h4>Now Playing</h4>-->
+      <!--<ul id="now-playing" class="list-group list-group-horizontal">-->
+      <!--<li class="list-group-item" v-for="movie in nowPlayingMovies">-->
+      <!--<app-movieimage-subtitle :movie="movie"></app-movieimage-subtitle>-->
+      <!--</li>-->
+      <!--</ul>-->
+      <!--</div>-->
+      <!--</div>-->
     </div>
-
+    <selected-media-modal/>
   </div>
 </template>
 
 <script>
 
   import {mapState, mapActions} from 'vuex';
-  import MovieImageSubTitle from '../Movies/MovieImageSubTitle.vue'
+  import MovieImageSubTitle from '../Movies/MovieImageSubTitle.vue';
+  import SelectedMediaModal from '../Modals/SelectedMediaModal.vue';
+  import ActorSummary from '../Movies/ActorSummary.vue';
 
   export default {
     data() {
@@ -81,17 +56,23 @@
       }
     },
     components: {
-      'app-movieimage-subtitle': MovieImageSubTitle
+      'app-movieimage-subtitle': MovieImageSubTitle,
+      'selected-media-modal': SelectedMediaModal,
+      'app-actorsummary': ActorSummary
     },
     methods: {
       ...mapActions({
         loadNowPlaying: 'movies/loadNowPlaying',
-        multiSearch: 'movies/multiSearch'
+        multiSearch: 'movies/multiSearch',
+        setSelectedMedia: 'movies/setSelectedMedia'
       }),
       performMultiSearch() {
         if (this.multiSearchText) {
           this.multiSearch(this.multiSearchText)
         }
+      },
+      selectMedia(media) {
+        this.setSelectedMedia(media).then(() => this.$modal.show('selected-media-modal', {selectedMedia: this.selectedMedia}));
       }
     },
     computed: {
@@ -102,20 +83,13 @@
       })
     },
     created() {
-      this.loadNowPlaying();
+      /* disabled for now for api-usage reasons - enable once site is at more complete state
+        this.loadNowPlaying();
+      */
     }
   }
 </script>
 
 <style scoped>
-  #now-playing li {
-    width: 120px;
-    text-align: center;
-  }
 
-  #now-playing .image-sub-title {
-    display: block;
-    color: #888;
-    font-weight: bold;
-  }
 </style>
