@@ -12,7 +12,7 @@
     </div>
 
     <div class="row" v-show="multiSearchResults.actors">
-      <app-actorsummary :actor="actor" v-for="actor in multiSearchResults.actors"/>
+      <app-actorsummary :key="actor.id" :actor="actor" v-for="actor in multiSearchResults.actors"/>
     </div>
 
     <!--<div class="col-md-4">-->
