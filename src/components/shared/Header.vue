@@ -7,7 +7,7 @@
 
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav">
-          <router-link tag="li" to="/"><a>Homepage</a></router-link>
+          <router-link tag="li" to="/advancedsearch"><a>Advanced Search</a></router-link>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li v-if="auth.username" class="dropdown">

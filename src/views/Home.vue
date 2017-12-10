@@ -12,7 +12,13 @@
     </div>
 
     <div class="row" v-show="multiSearchResults.actors">
-      <app-actorsummary :key="actor.id" :actor="actor" v-for="actor in multiSearchResults.actors"/>
+      <app-actorsummary
+        :key="actor.id"
+        :actor="actor"
+        v-for="actor in multiSearchResults.actors">
+        <!--<strong slot="actorName" slot-scope="props" class="slot-class">SLOT: {{props.text.toUpperCase()}}</strong>-->
+        <!--<p slot="knownFor" class="known-for">This is actor is known for some things</p>-->
+      </app-actorsummary>
     </div>
 
     <!--<div class="col-md-4">-->
@@ -38,16 +44,14 @@
       <!--</div>-->
       <!--</div>-->
     </div>
-    <selected-media-modal/>
   </div>
 </template>
 
 <script>
 
   import {mapState, mapActions} from 'vuex';
-  import MovieImageSubTitle from '../Movies/MovieImageSubTitle.vue';
-  import SelectedMediaModal from '../Modals/SelectedMediaModal.vue';
-  import ActorSummary from '../Movies/ActorSummary.vue';
+  import MovieImageSubTitle from '../components/Movies/MovieImageSubTitle.vue';
+  import ActorSummary from '../components/Movies/ActorSummary.vue';
 
   export default {
     data() {
@@ -57,7 +61,6 @@
     },
     components: {
       'app-movieimage-subtitle': MovieImageSubTitle,
-      'selected-media-modal': SelectedMediaModal,
       'app-actorsummary': ActorSummary
     },
     methods: {
@@ -70,9 +73,6 @@
         if (this.multiSearchText) {
           this.multiSearch(this.multiSearchText)
         }
-      },
-      selectMedia(media) {
-        this.setSelectedMedia(media).then(() => this.$modal.show('selected-media-modal', {selectedMedia: this.selectedMedia}));
       }
     },
     computed: {
@@ -91,5 +91,7 @@
 </script>
 
 <style scoped>
-
+  strong, .known-for {
+    color: white !important;
+  }
 </style>

@@ -1,24 +1,39 @@
 <template>
   <div class="search-result-actor-wrapper col-md-3">
-    <div class="actor-name">{{actor.name}}</div>
-    <div class="search-result-actor-img">
-      <img v-if="actor.profile_path" :src="'https://image.tmdb.org/t/p/original/' + actor.profile_path"
+    <slot name="actorName" :text="actor.name">
+      <div class="actor-name">{{actor.name}}</div>
+    </slot>
+    <div @click="viewDetails()" class="search-result-actor-img">
+      <img v-if="actor.profile_path" :src="'https://image.tmdb.org/t/p/w300/' + actor.profile_path"
            height="75px"/>
       <img v-else :src="'http://shackmanlab.org/wp-content/uploads/2013/07/person-placeholder.jpg'" height="75px"/>
     </div>
     <div class="known-for-wrapper">
-      <div class="known-for-movie" v-for="media in actor.known_for">
-        <img :src="'https://image.tmdb.org/t/p/original/' + media.poster_path" width="45px"/>
-      </div>
+      <slot name="knownFor">
+        <div class="known-for-movie" v-for="media in actor.known_for">
+          <img :src="'https://image.tmdb.org/t/p/original/' + media.poster_path" width="45px"/>
+        </div>
+      </slot>
     </div>
   </div>
 </template>
 <script>
 
   import {mapActions} from 'vuex';
+  import {router} from '../../main.js';
 
   export default {
-    props: ['actor']
+    props: ['actor'],
+    methods: {
+      ...mapActions({
+        setSelectedMedia: 'movies/setSelectedMedia'
+      }),
+      viewDetails() {
+        this.setSelectedMedia(this.actor).then(() => {
+          router.push('details')
+        });
+      }
+    }
   }
 
 </script>
@@ -57,5 +72,14 @@
   .search-result-actor-img img {
     height: 225px !important;
     max-width: 150px;
+  }
+
+  .search-result-actor-img img {
+    border-radius: 8px;
+  }
+
+  .search-result-actor-img:hover {
+    opacity: 0.7;
+    cursor: pointer;
   }
 </style>

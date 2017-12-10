@@ -19,11 +19,11 @@
             }
         },
         created() {
-            eventBus.$on('gitinfo', (data) => this.gitInformation = data.value);
-
-            axios.get('/api/config/gitinfo')
-                .then(res => eventBus.$emit('gitinfo', {value: res.data}))
-                .catch(err => console.log(err));
+//            eventBus.$on('gitinfo', (data) => this.gitInformation = data.value);
+//
+//            axios.get('/api/config/gitinfo')
+//                .then(res => eventBus.$emit('gitinfo', {value: res.data}))
+//                .catch(err => console.log(err));
         }
     }
 </script>

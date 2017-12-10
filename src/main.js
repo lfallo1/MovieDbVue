@@ -19,7 +19,7 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 //components
 import App from './components/App.vue'
-import SelectedMediaModal from './components/Modals/SelectedMediaModal.vue'
+import SelectedMediaModal from './components/Modals/ImageModal.vue'
 
 //register plugins
 Vue.use(BootstrapVue);
