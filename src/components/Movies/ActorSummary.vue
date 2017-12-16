@@ -26,10 +26,16 @@
     props: ['actor'],
     methods: {
       ...mapActions({
-        setSelectedMedia: 'movies/setSelectedMedia'
+        setSelectedMedia: 'movies/setSelectedMedia',
+        advancedSearch: 'movies/advancedSearch',
+        setAdvancedSearchOptions: 'movies/setAdvancedSearchOptions',
+        resetAdvancedSearch: 'movies/resetAdvancedSearch'
       }),
       viewDetails() {
         this.setSelectedMedia(this.actor).then(() => {
+          this.resetAdvancedSearch();
+          this.setAdvancedSearchOptions({'with_people': this.actor.id});
+          this.advancedSearch();
           router.push('details')
         });
       }

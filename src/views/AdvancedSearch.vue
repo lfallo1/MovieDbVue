@@ -15,21 +15,21 @@
           </div>
           <div class="form-group col-md-2">
             <label>Release Date Min</label>
-            <app-datepicker :clear-button="true"
-                            v-model="searchOptions.release_date_gte"
+            <app-datepicker format="yyyy-MM-dd" :clear-button="true"
+                            v-model="releaseDateGte"
                             :minimumView="'day'"
                             :maximumView="'month'"
                             :initialView="'month'"></app-datepicker>
           </div>
           <div class="form-group col-md-2">
             <label>Release Date Max</label>
-            <app-datepicker :clear-button="true" v-model="searchOptions.release_date_Lte" :minimumView="'day'"
+            <app-datepicker format="yyyy-MM-dd" :clear-button="true" v-model="releaseDateLte" :minimumView="'day'"
                             :maximumView="'month'"
                             :initialView="'month'"></app-datepicker>
           </div>
           <div class="form-group col-md-2">
             <label>With genres</label>
-            <app-multiselect v-model="searchOptions.withGenres"
+            <app-multiselect v-model="selectedGenres"
                              :close-on-select="false"
                              :options="genres"
                              :multiple="true"
@@ -40,8 +40,8 @@
           </div>
           <div class="form-group col-md-2">
             <label>Sort</label>
-            <app-multiselect v-model="searchOptions.sort_by"
-                             :close-on-select="false"
+            <app-multiselect v-model="sortBy"
+                             :close-on-select="true"
                              :options="sortOptions"
                              :multiple="false"
                              track-by="value"
@@ -49,23 +49,45 @@
                              deselect-label=""
                              :custom-label="sortOptionsLabel"></app-multiselect>
           </div>
-          <!--<div class="form-group col-md-2">-->
-          <!--<label>Without genres</label>-->
-          <!--<app-multiselect v-model="searchOptions.withoutGenres"-->
-          <!--:options="options"> />-->
-          <!--</div>-->
+          <div class="form-group col-md-2">
+            <label>Keywords</label>
+            <input class="form-control" type="text" v-model="keywords" />
+          </div>
         </div>
       </form>
+      <div class="row">
+        <div class="col-md-6">
+          <div @click="search()" class="btn btn-primary">Search</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4">
+          <div v-for="movie in advancedSearchResults">
+            <div class="row">
+              <app-movieimage-subtitle :movie="movie"></app-movieimage-subtitle>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-8">
+          <app-movie-details :movie="selectedMovie"/>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
 
 <script>
 
-  import Datepicker from 'vuejs-datepicker';
+  import Datepicker from 'vuejs-datepicker'
   import vueSlider from 'vue-slider-component'
   import Multiselect from 'vue-multiselect'
   import moviesData from '../data/movies_data.js'
+  import {mapActions, mapState} from 'vuex'
+  import StringUtil from '../data/string_util.js'
+  import MovieImageSubTitle from '../components/Movies/MovieImageSubTitle.vue'
+  import MovieDetails from '../components/Movies/MovieDetails.vue'
 
   /**
    *         sort_by: '',
@@ -90,24 +112,73 @@
     components: {
       'app-datepicker': Datepicker,
       'app-vueslider': vueSlider,
-      'app-multiselect': Multiselect
+      'app-multiselect': Multiselect,
+      'app-movieimage-subtitle' : MovieImageSubTitle,
+      'app-movie-details' : MovieDetails
     },
     data() {
       return {
-        searchOptions: {
-          release_date_gte: new Date(new Date().getFullYear(), 0, 1)
-        },
+        searchOptions: {},
+        sortBy: '',
+        releaseDateGte : new Date(new Date().getFullYear(), 0, 1),
+        releaseDateLte: null,
+        selectedGenres: [],
+        selectedWithoutGenres: [],
         genres: [],
         sortOptions: []
       }
     },
+    computed: {
+      ...mapState({
+        advancedSearchResults: state => state.movies.advancedSearchResults,
+        selectedMovie: state => state.movies.selectedMovie
+      })
+    },
     methods: {
+      ...mapActions({
+        setAdvancedSearchOptions: 'movies/setAdvancedSearchOptions',
+        advancedSearch: 'movies/advancedSearch',
+        resetAdvancedSearch: 'movies/resetAdvancedSearch',
+        selectMovieById: 'movies/selectMovieById'
+      }),
       genresLabel(option) {
         return option.name;
       },
       sortOptionsLabel(option) {
         const direction = option.direction ? 'desc' : 'asc';
         return `${option.display} ${direction}`;
+      },
+      search(){
+        this.resetAdvancedSearch();
+        this.searchOptions.without_genres = '';
+        this.searchOptions.with_keywords = '';
+
+        //set genres
+        this.searchOptions.with_genres = this.selectedGenres.map(s=>s.id).toString().replace(/,/g, '|');
+        this.searchOptions.without_genres = this.selectedWithoutGenres.map(s=>s.id).toString().replace(/,/g, '|');
+
+        //sort direction
+        if(this.sortBy){
+          this.searchOptions.sort_by = this.sortBy.value;
+        }
+
+        //format release date values
+        if(this.releaseDateGte){
+          this.searchOptions.primary_release_date_gte = StringUtil.dateToString(this.releaseDateGte);
+        }
+
+        if(this.releaseDateLte){
+          this.searchOptions.primary_release_date_lte = StringUtil.dateToString(this.releaseDateLte);
+        }
+
+        //set keywords - this will need to be a promise
+        var keywordList = this.keywords.replace(/  +/g, ' ').split(' ');
+        for(var i = 0; i < keywordList.length; i++){
+          // make web request to /search/keyword?query=keywordList[i], and get list of ids
+        }
+
+        this.setAdvancedSearchOptions(this.searchOptions);
+        this.advancedSearch();
       }
     },
     created() {

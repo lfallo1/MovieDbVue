@@ -4,7 +4,8 @@ import {
   MOVIES_SET_SELECTED_MEDIA,
   MOVIES_SET_USAGE,
   MOVIES_ADVANCEDSEARCH_SET_OPTIONS,
-  MOVIES_ADVANCEDSEARCH_SET_RESULTS
+  MOVIES_ADVANCEDSEARCH_SET_RESULTS,
+  MOVIES_SET_MOVIE
 } from './mutation-types.js';
 import {HTTP} from '../../http.js';
 
@@ -13,6 +14,7 @@ const api_key = '21daf02c31d8c5f60b02897088a9aa87';
 export default {
   namespaced: true,
   state: {
+    selectedMovie: {},
     multiSearchResults: {
       movies: [],
       actors: [],
@@ -33,8 +35,8 @@ export default {
       sort_by: {value: 'vote_average.desc', q: 'sort_by'},
       page: {value: 1, q: 'page'},
       primary_release_year: {value: 0, q: 'primary_release_year'},
-      release_date_gte: {value: null, q: 'release_date.gte'},
-      release_date_lte: {value: null, q: 'release_date.lte'},
+      primary_release_date_gte: {value: null, q: 'primary_release_date.gte'},
+      primary_release_date_lte: {value: null, q: 'primary_release_date.lte'},
       vote_count_gte: {value: 0, q: 'vote_count.gte'},
       vote_count_lte: {value: 0, q: 'vote_count.lte'},
       vote_average_gte: {value: 6.0, q: 'vote_average.gte'},
@@ -49,6 +51,9 @@ export default {
     advancedSearchResults: []
   },
   mutations: {
+    [MOVIES_SET_MOVIE](state, movie){
+      state.selectedMovie = movie;
+    },
     [MOVIES_SET_SEARCH_RESULTS](state, results) {
       state.multiSearchResults.movies = results.movies;
       state.multiSearchResults.actors = results.actors;
@@ -75,13 +80,24 @@ export default {
     }
   },
   actions: {
+    selectMovieById({commit}, id){
+      commit(MOVIES_SET_MOVIE, {});
+      HTTP.get(`/movie/${id}?api_key=${api_key}`).then(movie => {
+
+        HTTP.get(`/movie/${id}/credits?api_key=${api_key}`).then(res => {
+          movie.actors = res.cast;
+          commit(MOVIES_SET_MOVIE, movie);
+        });
+
+      });
+    },
     resetAdvancedSearch({dispatch}) {
       dispatch('setAdvancedSearchOptions', {
         sort_by: '',
         page: 1,
         primary_release_year: 0,
-        release_date_gte: null,
-        release_date_lte: null,
+        primary_release_date_gte: null,
+        primary_release_date_lte: null,
         vote_count_gte: 0,
         vote_count_lte: 0,
         vote_average_gte: 6.0,

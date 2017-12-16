@@ -7,3 +7,4 @@ export const MOVIES_SET_SELECTED_MEDIA = 'movies/setSelectedMedia';
 export const MOVIES_SET_USAGE = 'movies/setUsage';
 export const MOVIES_ADVANCEDSEARCH_SET_OPTIONS = 'movies/setAdvancedSearchOptions';
 export const MOVIES_ADVANCEDSEARCH_SET_RESULTS = 'movies/setAdvancedSearchResults';
+export const MOVIES_SET_MOVIE = 'movies/setMovie';

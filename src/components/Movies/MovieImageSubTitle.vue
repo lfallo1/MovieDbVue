@@ -1,6 +1,6 @@
 <template>
   <div>
-    <img :src="'https://image.tmdb.org/t/p/original/' + movie.poster_path"
+    <img @click="selectMovieById(movie.id)" :src="'https://image.tmdb.org/t/p/original/' + movie.poster_path"
          width="80px"/>
     <span class="image-sub-title">{{movie.title}} ({{movie.release_date}})</span>
   </div>
@@ -10,6 +10,11 @@
   import {mapActions} from 'vuex';
 
   export default {
-    props: ['movie']
+    props: ['movie'],
+    methods: {
+      ...mapActions({
+        selectMovieById : 'movies/selectMovieById'
+      })
+    }
   }
 </script>

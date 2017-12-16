@@ -80,18 +80,16 @@ export default{
 
     "sortOptions" : [
       { value : 'popularity.asc', display: 'Popularity', direction: 0},
-      { value : ' popularity.desc', display: 'Popularity', direction: 1},
-      { value : ' release_date.asc', display: 'Release Date', direction: 0},
-      { value : ' release_date.desc', display: 'Release Date', direction: 1},
-      { value : ' revenue.asc', display: 'Revenue', direction: 0},
-      { value : ' revenue.desc', display: 'Revenue', direction: 1},
-      { value : ' primary_release_date.asc', display: 'Primary Release Date', direction: 0},
-      { value : ' primary_release_date.desc', display: 'Primary Release Date', direction: 1},
-      { value : ' original_title.asc', display: 'Original Title', direction: 0},
-      { value : ' original_title.desc', display: 'Original Title', direction: 1},
-      { value : ' vote_average.asc', display: 'Vote Average', direction: 0},
-      { value : ' vote_average.desc', display: 'Vote Average', direction: 1},
-      { value : ' vote_count.asc', display: 'Vote Count', direction: 0},
-      { value : ' vote_count.desc', display: 'Vote Count', direction: 1}
+      { value : 'popularity.desc', display: 'Popularity', direction: 1},
+      { value : 'revenue.asc', display: 'Revenue', direction: 0},
+      { value : 'revenue.desc', display: 'Revenue', direction: 1},
+      { value : 'primary_release_date.asc', display: 'Release Date', direction: 0},
+      { value : 'primary_release_date.desc', display: 'Release Date', direction: 1},
+      { value : 'original_title.asc', display: 'Original Title', direction: 0},
+      { value : 'original_title.desc', display: 'Original Title', direction: 1},
+      { value : 'vote_average.asc', display: 'Vote Average', direction: 0},
+      { value : 'vote_average.desc', display: 'Vote Average', direction: 1},
+      { value : 'vote_count.asc', display: 'Vote Count', direction: 0},
+      { value : 'vote_count.desc', display: 'Vote Count', direction: 1}
     ]
 }
