@@ -51,7 +51,11 @@
           </div>
           <div class="form-group col-md-2">
             <label>Keywords</label>
-            <input class="form-control" type="text" v-model="keywords" />
+            <div v-for="(keyword, idx) in keywords">
+              <input class="form-control" type="text" v-model="keyword.value"/>&nbsp;
+              <span class="text-danger clickable glyphicon glyphicon-remove" @click="keywords.splice(idx, 1)"></span>
+            </div>
+            <button class="btn btn-success" @click="keywords.push({value: ''})">Add</button>
           </div>
         </div>
       </form>
@@ -113,19 +117,20 @@
       'app-datepicker': Datepicker,
       'app-vueslider': vueSlider,
       'app-multiselect': Multiselect,
-      'app-movieimage-subtitle' : MovieImageSubTitle,
-      'app-movie-details' : MovieDetails
+      'app-movieimage-subtitle': MovieImageSubTitle,
+      'app-movie-details': MovieDetails
     },
     data() {
       return {
         searchOptions: {},
         sortBy: '',
-        releaseDateGte : new Date(new Date().getFullYear(), 0, 1),
+        releaseDateGte: new Date(new Date().getFullYear(), 0, 1),
         releaseDateLte: null,
         selectedGenres: [],
         selectedWithoutGenres: [],
         genres: [],
-        sortOptions: []
+        sortOptions: [],
+        keywords: [{value: ''}]
       }
     },
     computed: {
@@ -139,7 +144,8 @@
         setAdvancedSearchOptions: 'movies/setAdvancedSearchOptions',
         advancedSearch: 'movies/advancedSearch',
         resetAdvancedSearch: 'movies/resetAdvancedSearch',
-        selectMovieById: 'movies/selectMovieById'
+        selectMovieById: 'movies/selectMovieById',
+        searchKeyword: 'movies/searchKeyword'
       }),
       genresLabel(option) {
         return option.name;
@@ -148,37 +154,52 @@
         const direction = option.direction ? 'desc' : 'asc';
         return `${option.display} ${direction}`;
       },
-      search(){
-        this.resetAdvancedSearch();
+      search() {
+
+        //reset state
+        this.resetAdvancedSearch(false);
+
+        //reset local properties
         this.searchOptions.without_genres = '';
         this.searchOptions.with_keywords = '';
+        this.searchOptions.primary_release_date_gte = null;
+        this.searchOptions.primary_release_date_lte = null;
+        this.searchOptions.sort_by = '';
 
         //set genres
-        this.searchOptions.with_genres = this.selectedGenres.map(s=>s.id).toString().replace(/,/g, '|');
-        this.searchOptions.without_genres = this.selectedWithoutGenres.map(s=>s.id).toString().replace(/,/g, '|');
+        this.searchOptions.with_genres = this.selectedGenres.map(s => s.id).toString().replace(/,/g, '|');
+        this.searchOptions.without_genres = this.selectedWithoutGenres.map(s => s.id).toString().replace(/,/g, '|');
 
         //sort direction
-        if(this.sortBy){
+        if (this.sortBy) {
           this.searchOptions.sort_by = this.sortBy.value;
         }
 
         //format release date values
-        if(this.releaseDateGte){
+        if (this.releaseDateGte) {
           this.searchOptions.primary_release_date_gte = StringUtil.dateToString(this.releaseDateGte);
         }
 
-        if(this.releaseDateLte){
+        if (this.releaseDateLte) {
           this.searchOptions.primary_release_date_lte = StringUtil.dateToString(this.releaseDateLte);
         }
 
         //set keywords - this will need to be a promise
-        var keywordList = this.keywords.replace(/  +/g, ' ').split(' ');
-        for(var i = 0; i < keywordList.length; i++){
-          // make web request to /search/keyword?query=keywordList[i], and get list of ids
+        let keywordRequests = [];
+        for (let i = 0; i < this.keywords.length; i++) {
+          if(this.keywords[i].value) {
+            // make web request to /search/keyword?query=keywordList[i], and get list of ids
+            keywordRequests.push(this.searchKeyword(this.keywords[i].value));
+          }
         }
-
-        this.setAdvancedSearchOptions(this.searchOptions);
-        this.advancedSearch();
+        Promise.all(keywordRequests).then(data => {
+          for (let i = 0; i < data.length; i++) {
+            this.searchOptions.with_keywords += data[i].results.map(r => r.id).toString().replace(/,/g, '|') + "|";
+          }
+          this.searchOptions.with_keywords = this.searchOptions.with_keywords.substring(0, this.searchOptions.with_keywords.length - 1);
+          this.setAdvancedSearchOptions(this.searchOptions);
+          this.advancedSearch();
+        });
       }
     },
     created() {

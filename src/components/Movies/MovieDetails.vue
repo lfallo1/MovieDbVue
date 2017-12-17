@@ -70,7 +70,7 @@
       viewDetails(actor) {
         actor.media_type='person';
         this.setSelectedMedia(actor).then(() => {
-          this.resetAdvancedSearch();
+          this.resetAdvancedSearch(true);
           this.setAdvancedSearchOptions({'with_people': actor.id});
           this.advancedSearch();
           router.push('details')

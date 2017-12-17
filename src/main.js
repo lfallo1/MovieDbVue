@@ -16,6 +16,7 @@ import routes from './routes.js';
 //bootstrap
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
+import 'vue2-autocomplete-js/dist/style/vue2-autocomplete.css'
 
 //components
 import App from './components/App.vue'

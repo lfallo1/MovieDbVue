@@ -4,9 +4,18 @@
 
     <div id="search-bar">
       <div class="input-group">
-        <span>{{multiSearchText}}</span>
-        <input v-model="multiSearchText" type="text" class="form-control"
-               placeholder="Search movies, actors, and tv shows" aria-describedby="search-addon">
+        <vue-typeahead
+          url="https://api.themoviedb.org/3/search/keyword"
+          anchor="name"
+          label=""
+          :classes="{ input: 'form-control'}"
+          param="query"
+          :customParams="{api_key: '21daf02c31d8c5f60b02897088a9aa87'}"
+          :onSelect="selectAutocompleteItem"
+          :onShouldGetData="invokeAutocomplete">
+
+        </vue-typeahead>
+
         <span @click="performMultiSearch" class="btn btn-success input-group-addon" id="search-addon">Search</span>
       </div>
     </div>
@@ -52,27 +61,41 @@
   import {mapState, mapActions} from 'vuex';
   import MovieImageSubTitle from '../components/Movies/MovieImageSubTitle.vue';
   import ActorSummary from '../components/Movies/ActorSummary.vue';
+  import VueAutocomplete from 'vue2-autocomplete-js'
 
   export default {
-    data() {
-      return {
-        multiSearchText: ''
-      }
-    },
     components: {
       'app-movieimage-subtitle': MovieImageSubTitle,
-      'app-actorsummary': ActorSummary
+      'app-actorsummary': ActorSummary,
+      'vue-typeahead': VueAutocomplete
+    },
+    data(){
+      return {
+        multiSearchText : ''
+      }
     },
     methods: {
       ...mapActions({
         loadNowPlaying: 'movies/loadNowPlaying',
         multiSearch: 'movies/multiSearch',
-        setSelectedMedia: 'movies/setSelectedMedia'
+        setSelectedMedia: 'movies/setSelectedMedia',
+        searchKeyword: 'movies/searchKeyword'
       }),
       performMultiSearch() {
         if (this.multiSearchText) {
           this.multiSearch(this.multiSearchText)
         }
+      },
+      selectAutocompleteItem(item){
+        this.multiSearchText = item;
+      },
+      invokeAutocomplete(q){
+        this.multiSearchText = q;
+        return new Promise((resolve, reject) => {
+          this.searchKeyword(q).then(res=>{
+            resolve(res.results);
+          });
+        });
       }
     },
     computed: {

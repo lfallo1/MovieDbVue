@@ -91,25 +91,46 @@ export default {
 
       });
     },
-    resetAdvancedSearch({dispatch}) {
-      dispatch('setAdvancedSearchOptions', {
-        sort_by: '',
-        page: 1,
-        primary_release_year: 0,
-        primary_release_date_gte: null,
-        primary_release_date_lte: null,
-        vote_count_gte: 0,
-        vote_count_lte: 0,
-        vote_average_gte: 6.0,
-        vote_average_lte: 0,
-        with_cast: '',
-        with_genres: '',
-        without_genres: '',
-        with_keywords: '',
-        without_keywords: '',
-        with_people: '',
-        sort_by: 'vote_average.desc'
-      });
+    resetAdvancedSearch({dispatch}, resetToDefault) {
+      if(resetToDefault) {
+        dispatch('setAdvancedSearchOptions', {
+          sort_by: '',
+          page: 1,
+          primary_release_year: 0,
+          primary_release_date_gte: null,
+          primary_release_date_lte: null,
+          vote_count_gte: 0,
+          vote_count_lte: 0,
+          vote_average_gte: 6.0,
+          vote_average_lte: 0,
+          with_cast: '',
+          with_genres: '',
+          without_genres: '',
+          with_keywords: '',
+          without_keywords: '',
+          with_people: '',
+          sort_by: 'vote_average.desc'
+        });
+      } else{
+        dispatch('setAdvancedSearchOptions', {
+          sort_by: '',
+          page: 1,
+          primary_release_year: 0,
+          primary_release_date_gte: null,
+          primary_release_date_lte: null,
+          vote_count_gte: 0,
+          vote_count_lte: 0,
+          vote_average_gte: 0,
+          vote_average_lte: 0,
+          with_cast: '',
+          with_genres: '',
+          without_genres: '',
+          with_keywords: '',
+          without_keywords: '',
+          with_people: '',
+          sort_by: ''
+        });
+      }
     },
     setAdvancedSearchOptions({commit}, searchOptions) {
       commit(MOVIES_ADVANCEDSEARCH_SET_OPTIONS, searchOptions);
@@ -155,6 +176,13 @@ export default {
             resolve();
           }, err => reject());
         }
+      });
+    },
+    searchKeyword({}, text){
+      return new Promise((resolve, reject) =>{
+        HTTP.get(`/search/keyword?query=${text}&api_key=${api_key}`).then(data =>{
+          resolve(data);
+        });
       });
     },
     updateUsage({commit}, usage) {

@@ -33,7 +33,7 @@
       }),
       viewDetails() {
         this.setSelectedMedia(this.actor).then(() => {
-          this.resetAdvancedSearch();
+          this.resetAdvancedSearch(true);
           this.setAdvancedSearchOptions({'with_people': this.actor.id});
           this.advancedSearch();
           router.push('details')
