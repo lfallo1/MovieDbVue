@@ -69,9 +69,11 @@ export default {
       state.usage = usage;
     },
     [MOVIES_ADVANCEDSEARCH_SET_OPTIONS](state, searchOptions) {
-      for (var option in searchOptions) {
-        if (state.advancedSearchOptions[option]) {
+      for (var option in state.advancedSearchOptions) {
+        if (searchOptions[option]) {
           state.advancedSearchOptions[option].value = searchOptions[option];
+        } else{
+          state.advancedSearchOptions[option].value = null;
         }
       }
     },
@@ -93,6 +95,7 @@ export default {
     },
     resetAdvancedSearch({dispatch}, resetToDefault) {
       if(resetToDefault) {
+        //when resetting to the default options
         dispatch('setAdvancedSearchOptions', {
           sort_by: '',
           page: 1,
@@ -112,6 +115,7 @@ export default {
           sort_by: 'vote_average.desc'
         });
       } else{
+        //when clearing all options
         dispatch('setAdvancedSearchOptions', {
           sort_by: '',
           page: 1,
@@ -141,9 +145,17 @@ export default {
         const obj = state.advancedSearchOptions[prop];
         url += obj.value ? `&${obj.q}=${obj.value}` : '';
       }
-      commit(MOVIES_ADVANCEDSEARCH_SET_RESULTS, []);
+
       HTTP.get(url).then(res => {
-        commit(MOVIES_ADVANCEDSEARCH_SET_RESULTS, res.results);
+        let results = [];
+
+        if(state.advancedSearchOptions.page.value > 1){
+          results = state.advancedSearchResults.concat(res.results);
+        } else{
+          results = res.results;
+        }
+
+        commit(MOVIES_ADVANCEDSEARCH_SET_RESULTS, results);
       }, err => console.log(err));
     },
     multiSearch({commit}, query) {

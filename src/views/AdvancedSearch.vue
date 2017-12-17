@@ -6,30 +6,30 @@
           <div class="form-group col-md-2">
             <label>Vote Count Min</label>
             <app-vueslider :max="1000" tooltip-dir="bottom" ref="vote_count_gte"
-                           v-model="searchOptions.vote_count_gte"></app-vueslider>
+                           v-model="form.voteCountMin"></app-vueslider>
           </div>
           <div class="form-group col-md-2">
             <label>Grade Min</label>
             <app-vueslider :max="10" tooltip-dir="bottom" :interval="0.1" ref="vote_average_gte"
-                           v-model="searchOptions.vote_average_gte"></app-vueslider>
+                           v-model="form.voteAverageMin"></app-vueslider>
           </div>
           <div class="form-group col-md-2">
             <label>Release Date Min</label>
             <app-datepicker format="yyyy-MM-dd" :clear-button="true"
-                            v-model="releaseDateGte"
+                            v-model="form.releaseDateGte"
                             :minimumView="'day'"
                             :maximumView="'month'"
                             :initialView="'month'"></app-datepicker>
           </div>
           <div class="form-group col-md-2">
             <label>Release Date Max</label>
-            <app-datepicker format="yyyy-MM-dd" :clear-button="true" v-model="releaseDateLte" :minimumView="'day'"
+            <app-datepicker format="yyyy-MM-dd" :clear-button="true" v-model="form.releaseDateLte" :minimumView="'day'"
                             :maximumView="'month'"
                             :initialView="'month'"></app-datepicker>
           </div>
           <div class="form-group col-md-2">
             <label>With genres</label>
-            <app-multiselect v-model="selectedGenres"
+            <app-multiselect v-model="form.selectedGenres"
                              :close-on-select="false"
                              :options="genres"
                              :multiple="true"
@@ -40,7 +40,7 @@
           </div>
           <div class="form-group col-md-2">
             <label>Sort</label>
-            <app-multiselect v-model="sortBy"
+            <app-multiselect v-model="form.sortBy"
                              :close-on-select="true"
                              :options="sortOptions"
                              :multiple="false"
@@ -51,31 +51,35 @@
           </div>
           <div class="form-group col-md-2">
             <label>Keywords</label>
-            <div v-for="(keyword, idx) in keywords">
+            <div v-for="(keyword, idx) in form.keywords">
               <input class="form-control" type="text" v-model="keyword.value"/>&nbsp;
               <span class="text-danger clickable glyphicon glyphicon-remove" @click="keywords.splice(idx, 1)"></span>
             </div>
-            <button class="btn btn-success" @click="keywords.push({value: ''})">Add</button>
+            <button class="btn btn-success" @click="form.keywords.push({value: ''})">Add</button>
           </div>
         </div>
       </form>
       <div class="row">
         <div class="col-md-6">
-          <div @click="search()" class="btn btn-primary">Search</div>
+          <div @click="search(false)" class="btn btn-primary">Search</div>
         </div>
       </div>
 
       <div class="row">
-        <div class="col-md-4">
-          <div v-for="movie in advancedSearchResults">
-            <div class="row">
-              <app-movieimage-subtitle :movie="movie"></app-movieimage-subtitle>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-8">
+        <div class="col-md-12">
           <app-movie-details :movie="selectedMovie"/>
         </div>
+      </div>
+
+      <div class="row">
+
+        <div class="col-md-3" v-for="movie in advancedSearchResults">
+          <div class="row">
+            <app-movieimage-subtitle :movie="movie"></app-movieimage-subtitle>
+          </div>
+        </div>
+        <button class="btn btn-primary" v-if="advancedSearchResults.length > 0" @click="search(true)">View more</button>
+
       </div>
 
     </div>
@@ -84,6 +88,7 @@
 
 <script>
 
+  import Vue from 'vue'
   import Datepicker from 'vuejs-datepicker'
   import vueSlider from 'vue-slider-component'
   import Multiselect from 'vue-multiselect'
@@ -122,15 +127,20 @@
     },
     data() {
       return {
-        searchOptions: {},
-        sortBy: '',
-        releaseDateGte: new Date(new Date().getFullYear(), 0, 1),
-        releaseDateLte: null,
-        selectedGenres: [],
-        selectedWithoutGenres: [],
-        genres: [],
+        form: {
+          sortBy: '',
+          voteCountMin: 0,
+          voteAverageMin: 0,
+          releaseDateGte: new Date(new Date().getFullYear(), 0, 1),
+          releaseDateLte: null,
+          selectedGenres: [],
+          selectedWithoutGenres: [],
+          sortOptions: [],
+          keywords: [{value: ''}]
+        },
         sortOptions: [],
-        keywords: [{value: ''}]
+        genres: [],
+        page: 1
       }
     },
     computed: {
@@ -154,51 +164,68 @@
         const direction = option.direction ? 'desc' : 'asc';
         return `${option.display} ${direction}`;
       },
-      search() {
+      search(specifyPage) {
 
-        //reset state
+        //reset store's state
         this.resetAdvancedSearch(false);
 
-        //reset local properties
-        this.searchOptions.without_genres = '';
-        this.searchOptions.with_keywords = '';
-        this.searchOptions.primary_release_date_gte = null;
-        this.searchOptions.primary_release_date_lte = null;
-        this.searchOptions.sort_by = '';
-
-        //set genres
-        this.searchOptions.with_genres = this.selectedGenres.map(s => s.id).toString().replace(/,/g, '|');
-        this.searchOptions.without_genres = this.selectedWithoutGenres.map(s => s.id).toString().replace(/,/g, '|');
-
-        //sort direction
-        if (this.sortBy) {
-          this.searchOptions.sort_by = this.sortBy.value;
-        }
-
-        //format release date values
-        if (this.releaseDateGte) {
-          this.searchOptions.primary_release_date_gte = StringUtil.dateToString(this.releaseDateGte);
-        }
-
-        if (this.releaseDateLte) {
-          this.searchOptions.primary_release_date_lte = StringUtil.dateToString(this.releaseDateLte);
-        }
-
-        //set keywords - this will need to be a promise
-        let keywordRequests = [];
-        for (let i = 0; i < this.keywords.length; i++) {
-          if(this.keywords[i].value) {
-            // make web request to /search/keyword?query=keywordList[i], and get list of ids
-            keywordRequests.push(this.searchKeyword(this.keywords[i].value));
-          }
-        }
-        Promise.all(keywordRequests).then(data => {
-          for (let i = 0; i < data.length; i++) {
-            this.searchOptions.with_keywords += data[i].results.map(r => r.id).toString().replace(/,/g, '|') + "|";
-          }
-          this.searchOptions.with_keywords = this.searchOptions.with_keywords.substring(0, this.searchOptions.with_keywords.length - 1);
-          this.setAdvancedSearchOptions(this.searchOptions);
+        this.setPayload(specifyPage).then(payload => {
+          this.setAdvancedSearchOptions(payload);
           this.advancedSearch();
+        }, err =>{
+          Vue.toasted.error('Error performing search', {
+            position: 'bottom-right',
+            icon: 'warning'
+          }).goAway(3500);
+        });
+      },
+      setPayload(specifyPage){
+        return new Promise((resolve, reject) =>{
+          let searchOptions = { with_keywords: '' };
+
+          if(specifyPage){
+            searchOptions.page = ++this.page;
+          } else{
+            searchOptions.page = this.page = 1;
+          }
+
+          //vote params
+          searchOptions.vote_count_gte = this.form.voteCountMin;
+          searchOptions.vote_average_gte = this.form.voteAverageMin;
+
+          //set genres
+          searchOptions.with_genres = this.form.selectedGenres.map(s => s.id).toString().replace(/,/g, '|');
+          searchOptions.without_genres = this.form.selectedWithoutGenres.map(s => s.id).toString().replace(/,/g, '|');
+
+          //sort direction
+          if (this.form.sortBy) {
+            searchOptions.sort_by = this.form.sortBy.value;
+          }
+
+          //format release date values
+          if (this.form.releaseDateGte) {
+            searchOptions.primary_release_date_gte = StringUtil.dateToString(this.form.releaseDateGte);
+          }
+
+          if (this.form.releaseDateLte) {
+            searchOptions.primary_release_date_lte = StringUtil.dateToString(this.form.releaseDateLte);
+          }
+
+          //set keywords - this will need to be a promise
+          let keywordRequests = [];
+          for (let i = 0; i < this.form.keywords.length; i++) {
+            if(this.form.keywords[i].value) {
+              // make web request to /search/keyword?query=keywordList[i], and get list of ids
+              keywordRequests.push(this.searchKeyword(this.form.keywords[i].value));
+            }
+          }
+          Promise.all(keywordRequests).then(data => {
+            for (let i = 0; i < data.length; i++) {
+              searchOptions.with_keywords += data[i].results.map(r => r.id).toString().replace(/,/g, '|') + "|";
+            }
+            searchOptions.with_keywords = searchOptions.with_keywords.substring(0, searchOptions.with_keywords.length - 1);
+            resolve(searchOptions);
+          }, err => reject());
         });
       }
     },
