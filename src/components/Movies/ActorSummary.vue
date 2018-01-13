@@ -33,13 +33,7 @@
         setAdvancedSearchMode: 'movies/setAdvancedSearchMode'
       }),
       viewDetails() {
-        this.setSelectedMedia(this.actor).then(() => {
-          this.resetAdvancedSearch(true);
-          this.setAdvancedSearchMode('movie');
-          this.setAdvancedSearchOptions({'with_people': this.actor.id});
-          this.advancedSearch();
-          router.push('actor-details')
-        });
+        router.push(`actor-details?id=${this.actor.id}`);
       }
     }
   }

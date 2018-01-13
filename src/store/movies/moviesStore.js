@@ -112,77 +112,89 @@ export default {
   actions: {
     selectMovieById({commit}, id) {
       commit(MOVIES_SET_MOVIE, {});
-      HTTP.get(`/movie/${id}?api_key=${api_key}`).then(movie => {
+      return new Promise((resolve, reject) => {
+        HTTP.get(`/movie/${id}?api_key=${api_key}`).then(movie => {
 
-        const promises = [
-          HTTP.get(`/movie/${id}/credits?api_key=${api_key}`),
-          HTTP.get(`/movie/${id}/similar?api_key=${api_key}`),
-          HTTP.get(`/movie/${id}/recommendations?api_key=${api_key}`)
-        ];
+          const promises = [
+            HTTP.get(`/movie/${id}/credits?api_key=${api_key}`),
+            HTTP.get(`/movie/${id}/similar?api_key=${api_key}`),
+            HTTP.get(`/movie/${id}/recommendations?api_key=${api_key}`)
+          ];
 
-        Promise.all(promises).then(res => {
+          Promise.all(promises).then(res => {
 
-          //credits
-          movie.actors = res[0].cast;
+            //credits
+            movie.actors = res[0].cast;
 
-          //similar movies
-          movie.similar = {
-            results: res[1].results,
-            page: 1,
-            finished: res[1].results.length == res[1].total_results
-          };
+            //similar movies
+            movie.similar = {
+              results: res[1].results,
+              page: 1,
+              finished: res[1].results.length == res[1].total_results
+            };
 
-          //recommended movies
-          movie.recommendations = {
-            results: res[2].results,
-            page: 1,
-            finished: res[2].results.length == res[2].total_results
-          };
+            //recommended movies
+            movie.recommendations = {
+              results: res[2].results,
+              page: 1,
+              finished: res[2].results.length == res[2].total_results
+            };
 
-          commit(MOVIES_SET_MOVIE, movie);
-        });
+            movie.media_type = 'movie';
+            commit(MOVIES_SET_MOVIE, movie);
+            resolve();
+          });
 
+        }, err => reject(err));
       });
     },
     selectTvShowById({commit}, id) {
       commit(MOVIES_SET_MOVIE, {});
-      HTTP.get(`/tv/${id}?api_key=${api_key}`).then(movie => {
+      return new Promise((resolve, reject) => {
+        HTTP.get(`/tv/${id}?api_key=${api_key}`).then(tvShow => {
 
-        const promises = [
-          HTTP.get(`/tv/${id}/credits?api_key=${api_key}`),
-          HTTP.get(`/tv/${id}/similar?api_key=${api_key}`),
-          HTTP.get(`/tv/${id}/recommendations?api_key=${api_key}`)
-        ];
+          const promises = [
+            HTTP.get(`/tv/${id}/credits?api_key=${api_key}`),
+            HTTP.get(`/tv/${id}/similar?api_key=${api_key}`),
+            HTTP.get(`/tv/${id}/recommendations?api_key=${api_key}`)
+          ];
 
-        Promise.all(promises).then(res => {
+          Promise.all(promises).then(res => {
 
-          //credits
-          movie.actors = res[0].cast;
+            //credits
+            tvShow.actors = res[0].cast;
 
-          //similar movies
-          movie.similar = {
-            results: res[1].results,
-            page: 1,
-            finished: res[1].results.length == res[1].total_results
-          };
+            //similar movies
+            tvShow.similar = {
+              results: res[1].results,
+              page: 1,
+              finished: res[1].results.length == res[1].total_results
+            };
 
-          //recommended movies
-          movie.recommendations = {
-            results: res[2].results,
-            page: 1,
-            finished: res[2].results.length == res[2].total_results
-          };
+            //recommended movies
+            tvShow.recommendations = {
+              results: res[2].results,
+              page: 1,
+              finished: res[2].results.length == res[2].total_results
+            };
 
-          commit(MOVIES_SET_MOVIE, movie);
+            tvShow.media_type = 'tv';
+            commit(MOVIES_SET_MOVIE, tvShow);
+            resolve();
+          });
+
+        }, err => {
+          reject();
+          console.log('error', err)
         });
-
-      });
+      })
     },
     viewMoreRecommended({commit, state}, media) {
       const id = media.id;
       const type = media.original_title ? 'movie' : 'tv';
       const url = `/${widthType}/${id}/recommendations?api_key=${api_key}&page=${state.selectedMovie.recommendations.page + 1}`;
       HTTP.get(url).then(res => {
+        state.selectedMovie.recommendations.forEach(r => r.media_type = type);
         state.selectedMovie.recommendations.results = state.selectedMovie.recommendations.results.concat(res.results);
         state.selectedMovie.recommendations.page++;
         state.selectedMovie.recommendations.finished = res.results.length == res.total_results
@@ -193,6 +205,7 @@ export default {
       const type = media.original_title ? 'movie' : 'tv';
       const url = `/${type}/${id}/similar?api_key=${api_key}&page=${state.selectedMovie.similar.page + 1}`;
       HTTP.get(url).then(res => {
+        state.selectedMovie.similar.forEach(r => r.media_type = type);
         state.selectedMovie.similar.results = state.selectedMovie.similar.results.concat(res.results);
         state.selectedMovie.similar.page++;
         state.selectedMovie.similar.finished = res.results.length == res.total_results;
@@ -315,15 +328,13 @@ export default {
       commit(MOVIES_SET_SELECTED_MEDIA, false);
       commit(MOVIES_SET_MOVIE, {});
     },
-    setSelectedMedia({commit}, media) {
+    setSelectedMedia({commit}, actorId) {
       return new Promise((resolve, reject) => {
-        if (media.media_type == 'person') {
-          HTTP.get(`/person/${media.id}?api_key=${api_key}`).then(data => {
-            data.media_type = 'person';
-            commit(MOVIES_SET_SELECTED_MEDIA, data);
-            resolve();
-          }, err => reject());
-        }
+        HTTP.get(`/person/${actorId}?api_key=${api_key}`).then(data => {
+          data.media_type = 'person';
+          commit(MOVIES_SET_SELECTED_MEDIA, data);
+          resolve();
+        }, err => reject(err));
       });
     },
     searchActors({commit}, text) {

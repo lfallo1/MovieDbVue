@@ -25,11 +25,11 @@
         } else {
           if (this.movie.original_title) {
             this.selectMovieById(this.movie.id).then(() => {
-              router.push('tvmovie-details')
+              router.push(`tvmovie-details?type=movie&id=${this.movie.id}`)
             });
           } else {
             this.selectTvShowById(this.movie.id).then(() => {
-              router.push('tvmovie-details')
+              router.push(`tvmovie-details?type=tv&id=${this.movie.id}`)
             });
           }
         }

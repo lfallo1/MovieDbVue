@@ -8,6 +8,8 @@ import 'vue-material/dist/vue-material.css'
 import Toasted from 'vue-toasted';
 import BootstrapVue from 'bootstrap-vue'
 import VModal from 'vue-js-modal'
+import VueScrollTo from 'vue-scrollto';
+
 
 //vuex / routes
 import store from './store/store.js';
@@ -27,6 +29,7 @@ Vue.use(VueMaterial);
 Vue.use(Toasted);
 Vue.use(VueRouter);
 Vue.use(VModal, {dialog: true});
+Vue.use(VueScrollTo);
 
 //optional eventBus
 export const eventBus = new Vue();

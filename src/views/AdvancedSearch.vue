@@ -92,7 +92,7 @@
             <label for="searchModeTV">TV</label>
             <input id="searchModeTV" name="searchMode" type="radio" v-model="searchMode" value="tv"/>
 
-            <div @click="search(false)" class="btn btn-primary">Search</div>
+            <div @click="searchButtonPressed(false)" class="btn btn-primary">Search</div>
           </div>
           <div id="filter-region">
             <button class="btn btn-default" @click="toggleFilterRegion()">Toggle</button>
@@ -105,13 +105,13 @@
 
       <div class="row">
         <div class="col-md-12">
-          <app-movie-full-details/>
+          <app-movie-full-details :handler="selectMedia"/>
         </div>
       </div>
 
       <div class="row">
 
-        <div class="col-md-3" v-for="movie in advancedSearchResults">
+        <div class="col-md-3" v-for="movie in advancedSearchResults" v-if="movie.poster_path">
           <div class="row">
             <app-movieimage-subtitle :movie="movie" :handler="selectMedia"></app-movieimage-subtitle>
           </div>
@@ -122,7 +122,8 @@
 
       <div id="view-more" class="row">
         <div class="col-md-12">
-          <button class="btn btn-primary" v-if="advancedSearchResults.length > 0" @click="search(true)">View more
+          <button class="btn btn-primary" v-if="advancedSearchResults.length > 0" @click="nextPage()">
+            View more
           </button>
         </div>
       </div>
@@ -142,6 +143,7 @@
   import StringUtil from '../data/string_util.js'
   import MovieImageSubTitle from '../components/Movies/MovieImageSubTitle.vue'
   import MovieFullDetails from '../components/Movies/MovieFullDetails.vue'
+  import {router} from '../main.js';
 
   export default {
     components: {
@@ -221,21 +223,33 @@
         const direction = option.direction ? 'desc' : 'asc';
         return `${option.display} ${direction}`;
       },
-      search(specifyPage) {
+      search(q) {
+        this.resetAdvancedSearch(false);
+        this.setAdvancedSearchMode(q.search_mode);
+        delete q.search_mode;
+        this.setAdvancedSearchOptions(q);
+        this.advancedSearch();
+      },
+      searchButtonPressed(specifyPage) {
 
         //reset store's state
-        this.resetAdvancedSearch(false);
 
-        this.setAdvancedSearchMode(this.searchMode);
-        this.setPayload(specifyPage).then(payload => {
-          this.setAdvancedSearchOptions(payload);
-          this.advancedSearch();
-        }, err => {
-          Vue.toasted.error('Error performing search', {
-            position: 'bottom-right',
-            icon: 'warning'
-          }).goAway(3500);
+        this.setPayload(specifyPage).then(searchOptions => {
+          let q = '';
+          let first = true;
+          for (let key in searchOptions) {
+            if (searchOptions[key]) {
+              const separator = first ? '?' : '&';
+              q += separator + key + '=' + searchOptions[key]
+              first = false;
+            }
+          }
+          router.push('advancedsearch' + q);
         });
+
+      },
+      nextPage() {
+        this.setPayload(true).then(payload => this.search(payload));
       },
       setPayload(specifyPage) {
         return new Promise((resolve, reject) => {
@@ -246,6 +260,8 @@
           } else {
             searchOptions.page = this.page = 1;
           }
+
+          searchOptions.search_mode = this.searchMode;
 
           //vote params
           searchOptions.vote_count_gte = this.form.voteCountMin;
@@ -308,8 +324,16 @@
       this.genres = moviesData.genres;
       this.sortOptions = moviesData.sortOptions;
       this.setSearchActorsResults([]);
-//      this.setAdvancedSearchResults([]);
-//      this.clearSelectedMedia();
+      if (Object.keys(this.$route.query).length > 0) {
+        this.search(this.$route.query);
+      }
+    },
+    watch: {
+      $route(to, from) {
+        if (Object.keys(to.query).length > 0) {
+          this.search(to.query);
+        }
+      }
     }
   }
 </script>

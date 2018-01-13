@@ -60,11 +60,11 @@
       selectMovie(movie) {
         if (movie.original_title) {
           this.selectMovieById(movie.id).then(() => {
-            router.push('tvmovie-details');
+            router.push(`tvmovie-details?type=movie&id=${movie.id}`);
           })
         } else {
           this.selectTvShowById(movie.id).then(() => {
-            router.push('tvmovie-details');
+            router.push(`tvmovie-details?type=tv&id=${movie.id}`);
           })
         }
       }

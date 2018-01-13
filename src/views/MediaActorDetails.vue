@@ -5,13 +5,18 @@
 </template>
 <script>
 
-  import {mapState} from 'vuex';
+  import {mapState, mapActions} from 'vuex';
   import {router} from '../main.js';
   import ActorDetails from '../components/Movies/ActorDetails.vue';
 
   export default {
     components: {
       'app-actor-details': ActorDetails,
+    },
+    methods: {
+      ...mapActions({
+        setSelectedMedia: 'movies/setSelectedMedia'
+      })
     },
     computed: {
       ...mapState({
@@ -22,6 +27,11 @@
       if (!this.selectedMedia) {
         router.push('/');
         return;
+      }
+    },
+    watch: {
+      $route(to, from) {
+        this.setSelectedMedia(to.query.id);
       }
     }
   }

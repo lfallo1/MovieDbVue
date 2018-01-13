@@ -1,5 +1,5 @@
 <template>
-  <div class="well well-sm" v-if="movie.id">
+  <div class="well well-sm" v-if="movie.id" id="full-movie-details" ref="fullDetails">
     <div class="row">
       <div class="col-md-3">
         <img :src="'https://image.tmdb.org/t/p/original/' + movie.poster_path"
@@ -78,21 +78,23 @@
         setSelectedMedia: 'movies/setSelectedMedia'
       }),
       viewDetails(actor) {
-        actor.media_type = 'person';
-        this.setSelectedMedia(actor).then(() => {
-          this.resetAdvancedSearch(true);
-          this.setAdvancedSearchMode('movie');
-          this.setAdvancedSearchOptions({'with_people': actor.id});
-          this.advancedSearch();
-          router.push('actor-details')
-        });
+        router.push(`actor-details?id=${actor.id}`)
       },
       selectMovie(movie) {
         if (this.handler) {
+          movie.media_type = movie.original_title ? 'movie' : 'tv';
           this.handler(movie);
         } else {
-          //movies have an original_title property, while tv shows do not
-          movie.original_title ? this.selectMovieById(movie.id) : this.selectTvShowById(movie.id);
+
+          if (movie.original_title) {
+            this.selectMovieById(movie.id).then(() => {
+              router.push(`tvmovie-details?type=movie&id=${this.movie.id}`)
+            });
+          } else {
+            this.selectTvShowById(movie.id).then(() => {
+              router.push(`tvmovie-details?type=tv&id=${this.movie.id}`)
+            });
+          }
         }
       }
     },
@@ -102,6 +104,14 @@
       }),
       visibleActors() {
         return this.actorsCollapsed ? this.movie.actors.slice(0, 7) : this.movie.actors;
+      }
+    },
+    updated() {
+      if (this.$refs.fullDetails) {
+        let vm = this;
+        vm.$scrollTo(vm.$refs.fullDetails, 250, {
+          easing: 'ease-in'
+        });
       }
     }
   }

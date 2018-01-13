@@ -22,6 +22,7 @@
     "vue-material": "^0.7.4",
     "vue-multiselect": "^2.0.8",
     "vue-router": "^3.0.1",
+    "vue-scrollto": "^2.8.0",
     "vue-slider-component": "^2.4.7",
     "vue-toasted": "^1.1.0",
     "vue2-autocomplete-js": "^0.2.2",
