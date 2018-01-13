@@ -58,9 +58,15 @@
         this.$modal.show('selected-image-modal', {image: image});
       },
       selectMovie(movie) {
-        this.selectMovieById(movie.id).then(() => {
-          router.push('tvmovie-details');
-        })
+        if (movie.original_title) {
+          this.selectMovieById(movie.id).then(() => {
+            router.push('tvmovie-details');
+          })
+        } else {
+          this.selectTvShowById(movie.id).then(() => {
+            router.push('tvmovie-details');
+          })
+        }
       }
     }
   }

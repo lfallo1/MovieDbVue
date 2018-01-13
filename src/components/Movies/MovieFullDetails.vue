@@ -21,7 +21,7 @@
     </div>
     <div class="related-movies scrollable-row"
          v-if="movie.similar && movie.similar.results && movie.similar.results.length > 0">
-      <h4>Similar Movies</h4>
+      <h4>Similar</h4>
       <div v-for="similarMovie in movie.similar.results">
         <img :src="'https://image.tmdb.org/t/p/original/' + similarMovie.poster_path"
              width="100px" @click="selectMovie(similarMovie)">
@@ -30,11 +30,11 @@
           <span class="related-movie-rating">{{similarMovie.vote_average}}</span>
         </div>
       </div>
-      <div v-if="!movie.similar.finished" class="clickable" @click="viewMoreSimilar(movie.id)">View more</div>
+      <div v-if="!movie.similar.finished" class="clickable" @click="viewMoreSimilar(movie)">View more</div>
     </div>
     <div class="related-movies scrollable-row"
-         v-if="movie.recommendations.results && movie.recommendations.results && movie.recommendations.results.length > 0">
-      <h4>Recommended Movies</h4>
+         v-if="movie.recommendations && movie.recommendations.results && movie.recommendations.results.length > 0">
+      <h4>Recommended</h4>
       <div v-for="movieRecommendation in movie.recommendations.results">
         <img :src="'https://image.tmdb.org/t/p/original/' + movieRecommendation.poster_path"
              width="100px" @click="selectMovie(movieRecommendation)">
@@ -43,7 +43,7 @@
           <span class="related-movie-rating">{{movieRecommendation.vote_average}}</span>
         </div>
       </div>
-      <div v-if="!movie.recommendations.finished" class="clickable" @click="viewMoreRecommended(movie.id)">View more
+      <div v-if="!movie.recommendations.finished" class="clickable" @click="viewMoreRecommended(movie)">View more
       </div>
     </div>
   </div>
@@ -72,6 +72,7 @@
         resetAdvancedSearch: 'movies/resetAdvancedSearch',
         setAdvancedSearchMode: 'movies/setAdvancedSearchMode',
         selectMovieById: 'movies/selectMovieById',
+        selectTvShowById: 'movies/selectTvShowById',
         viewMoreRecommended: 'movies/viewMoreRecommended',
         viewMoreSimilar: 'movies/viewMoreSimilar',
         setSelectedMedia: 'movies/setSelectedMedia'
@@ -87,10 +88,11 @@
         });
       },
       selectMovie(movie) {
-        if(this.handler){
+        if (this.handler) {
           this.handler(movie);
         } else {
-          this.selectMovieById(movie.id);
+          //movies have an original_title property, while tv shows do not
+          movie.original_title ? this.selectMovieById(movie.id) : this.selectTvShowById(movie.id);
         }
       }
     },

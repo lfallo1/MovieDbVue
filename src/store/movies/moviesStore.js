@@ -148,23 +148,50 @@ export default {
       commit(MOVIES_SET_MOVIE, {});
       HTTP.get(`/tv/${id}?api_key=${api_key}`).then(movie => {
 
-        HTTP.get(`/tv/${id}/credits?api_key=${api_key}`).then(res => {
-          movie.actors = res.cast;
+        const promises = [
+          HTTP.get(`/tv/${id}/credits?api_key=${api_key}`),
+          HTTP.get(`/tv/${id}/similar?api_key=${api_key}`),
+          HTTP.get(`/tv/${id}/recommendations?api_key=${api_key}`)
+        ];
+
+        Promise.all(promises).then(res => {
+
+          //credits
+          movie.actors = res[0].cast;
+
+          //similar movies
+          movie.similar = {
+            results: res[1].results,
+            page: 1,
+            finished: res[1].results.length == res[1].total_results
+          };
+
+          //recommended movies
+          movie.recommendations = {
+            results: res[2].results,
+            page: 1,
+            finished: res[2].results.length == res[2].total_results
+          };
+
           commit(MOVIES_SET_MOVIE, movie);
         });
 
       });
     },
-    viewMoreRecommended({commit, state}, id) {
-      const url = `/movie/${id}/recommendations?api_key=${api_key}&page=${state.selectedMovie.recommendations.page + 1}`;
+    viewMoreRecommended({commit, state}, media) {
+      const id = media.id;
+      const type = media.original_title ? 'movie' : 'tv';
+      const url = `/${widthType}/${id}/recommendations?api_key=${api_key}&page=${state.selectedMovie.recommendations.page + 1}`;
       HTTP.get(url).then(res => {
         state.selectedMovie.recommendations.results = state.selectedMovie.recommendations.results.concat(res.results);
         state.selectedMovie.recommendations.page++;
         state.selectedMovie.recommendations.finished = res.results.length == res.total_results
       });
     },
-    viewMoreSimilar({commit, state}, id) {
-      const url = `/movie/${id}/similar?api_key=${api_key}&page=${state.selectedMovie.similar.page + 1}`;
+    viewMoreSimilar({commit, state}, media) {
+      const id = media.id;
+      const type = media.original_title ? 'movie' : 'tv';
+      const url = `/${type}/${id}/similar?api_key=${api_key}&page=${state.selectedMovie.similar.page + 1}`;
       HTTP.get(url).then(res => {
         state.selectedMovie.similar.results = state.selectedMovie.similar.results.concat(res.results);
         state.selectedMovie.similar.page++;
