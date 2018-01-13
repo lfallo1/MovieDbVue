@@ -324,10 +324,6 @@ export default {
         commit(MOVIES_SET_NOW_PLAYING_MOVIES, res.results);
       });
     },
-    clearSelectedMedia({commit}) {
-      commit(MOVIES_SET_SELECTED_MEDIA, false);
-      commit(MOVIES_SET_MOVIE, {});
-    },
     setSelectedMedia({commit}, actorId) {
       return new Promise((resolve, reject) => {
         HTTP.get(`/person/${actorId}?api_key=${api_key}`).then(data => {

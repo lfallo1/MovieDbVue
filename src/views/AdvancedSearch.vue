@@ -193,7 +193,6 @@
         searchActors: 'movies/searchActors',
         setSearchActorsResults: 'movies/setSearchActorsResults',
         setAdvancedSearchResults: 'movies/setAdvancedSearchResults',
-        clearSelectedMedia: 'movies/clearSelectedMedia',
         setAdvancedSearchMode: 'movies/setAdvancedSearchMode',
         toggleFilterRegion: 'movies/toggleFilterRegion'
       }),
@@ -224,6 +223,7 @@
         return `${option.display} ${direction}`;
       },
       search(q) {
+        //update store and perform actual search
         this.resetAdvancedSearch(false);
         this.setAdvancedSearchMode(q.search_mode);
         delete q.search_mode;
@@ -232,9 +232,10 @@
       },
       searchButtonPressed(specifyPage) {
 
-        //reset store's state
-
+        //set payload
         this.setPayload(specifyPage).then(searchOptions => {
+
+          //convert to query string
           let q = '';
           let first = true;
           for (let key in searchOptions) {
@@ -244,11 +245,14 @@
               first = false;
             }
           }
+
+          //set url
           router.push('advancedsearch' + q);
         });
 
       },
       nextPage() {
+        //get next page of results
         this.setPayload(true).then(payload => this.search(payload));
       },
       setPayload(specifyPage) {
