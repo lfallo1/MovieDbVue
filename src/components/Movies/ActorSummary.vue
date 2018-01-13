@@ -1,5 +1,5 @@
 <template>
-  <div class="search-result-actor-wrapper col-md-3">
+  <div class="search-result-actor-wrapper">
     <slot name="actorName" :text="actor.name">
       <div class="actor-name">{{actor.name}}</div>
     </slot>
@@ -29,14 +29,16 @@
         setSelectedMedia: 'movies/setSelectedMedia',
         advancedSearch: 'movies/advancedSearch',
         setAdvancedSearchOptions: 'movies/setAdvancedSearchOptions',
-        resetAdvancedSearch: 'movies/resetAdvancedSearch'
+        resetAdvancedSearch: 'movies/resetAdvancedSearch',
+        setAdvancedSearchMode: 'movies/setAdvancedSearchMode'
       }),
       viewDetails() {
         this.setSelectedMedia(this.actor).then(() => {
           this.resetAdvancedSearch(true);
+          this.setAdvancedSearchMode('movie');
           this.setAdvancedSearchOptions({'with_people': this.actor.id});
           this.advancedSearch();
-          router.push('details')
+          router.push('actor-details')
         });
       }
     }
@@ -47,7 +49,6 @@
 <style>
 
   .search-result-actor-wrapper {
-    background: black;
     padding: 10px;
   }
 
@@ -71,13 +72,9 @@
     margin-left: 8px;
   }
 
-  .search-result-actor-wrapper {
-    margin-bottom: 75px;
-  }
-
   .search-result-actor-img img {
-    height: 225px !important;
-    max-width: 150px;
+    height: 400px;
+    width: 260px;
   }
 
   .search-result-actor-img img {
@@ -88,4 +85,5 @@
     opacity: 0.7;
     cursor: pointer;
   }
+
 </style>

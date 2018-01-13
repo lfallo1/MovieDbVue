@@ -4,23 +4,28 @@
 
     <div id="search-bar">
       <div class="input-group">
-        <vue-typeahead
-          url="https://api.themoviedb.org/3/search/keyword"
-          anchor="name"
-          label=""
-          :classes="{ input: 'form-control'}"
-          param="query"
-          :customParams="{api_key: '21daf02c31d8c5f60b02897088a9aa87'}"
-          :onSelect="selectAutocompleteItem"
-          :onShouldGetData="invokeAutocomplete">
+        <input class="form-control" v-model="multiSearchText" @keyup.enter="performMultiSearch"/>
+        <!--<vue-typeahead-->
+        <!--url="https://api.themoviedb.org/3/search/keyword"-->
+        <!--anchor="name"-->
+        <!--label=""-->
+        <!--:classes="{ input: 'form-control'}"-->
+        <!--param="query"-->
+        <!--:customParams="{api_key: '21daf02c31d8c5f60b02897088a9aa87'}"-->
+        <!--:onSelect="selectAutocompleteItem"-->
+        <!--:onShouldGetData="invokeAutocomplete"-->
+        <!--@keyup.enter="performMultiSearch">-->
 
-        </vue-typeahead>
+        <!--</vue-typeahead>-->
 
         <span @click="performMultiSearch" class="btn btn-success input-group-addon" id="search-addon">Search</span>
       </div>
     </div>
 
-    <div class="row" v-show="multiSearchResults.actors">
+    <div class="section-header">
+      ACTORS
+    </div>
+    <div class="scrollable-row" v-if="multiSearchResults.actors.length > 0">
       <app-actorsummary
         :key="actor.id"
         :actor="actor"
@@ -28,6 +33,47 @@
         <!--<strong slot="actorName" slot-scope="props" class="slot-class">SLOT: {{props.text.toUpperCase()}}</strong>-->
         <!--<p slot="knownFor" class="known-for">This is actor is known for some things</p>-->
       </app-actorsummary>
+    </div>
+    <div class="no-data-available" v-else>
+      No data available
+    </div>
+
+    <div class="section-header">
+      MOVIES
+    </div>
+    <div class="scrollable-row" v-if="multiSearchResults.movies.length > 0">
+      <app-movieimage-subtitle
+        :key="movie.id"
+        :movie="movie"
+        v-for="movie in multiSearchResults.movies">
+        <p slot="additionalDetails" class="additional-movie-details text-center">
+          <strong>{{movie.original_title}}</strong>&nbsp;<small>{{movie.vote_average}}/10</small>
+        </p>
+        <!--<strong slot="actorName" slot-scope="props" class="slot-class">SLOT: {{props.text.toUpperCase()}}</strong>-->
+        <!--<p slot="knownFor" class="known-for">This is actor is known for some things</p>-->
+      </app-movieimage-subtitle>
+    </div>
+    <div class="no-data-available" v-else>
+      No data available
+    </div>
+
+    <div class="section-header">
+      TV SHOWS
+    </div>
+    <div class="scrollable-row" v-if="multiSearchResults.tvShows.length > 0">
+      <app-movieimage-subtitle
+        :key="tvShow.id"
+        :movie="tvShow"
+        v-for="tvShow in multiSearchResults.tvShows">
+        <p slot="additionalDetails" class="additional-movie-details text-center">
+          <strong>{{tvShow.original_name}}</strong>&nbsp;<small>{{tvShow.vote_average}}/10</small>
+        </p>
+        <!--<strong slot="actorName" slot-scope="props" class="slot-class">SLOT: {{props.text.toUpperCase()}}</strong>-->
+        <!--<p slot="knownFor" class="known-for">This is actor is known for some things</p>-->
+      </app-movieimage-subtitle>
+    </div>
+    <div class="no-data-available" v-else>
+      No data available
     </div>
 
     <!--<div class="col-md-4">-->
@@ -69,9 +115,9 @@
       'app-actorsummary': ActorSummary,
       'vue-typeahead': VueAutocomplete
     },
-    data(){
+    data() {
       return {
-        multiSearchText : ''
+        multiSearchText: ''
       }
     },
     methods: {
@@ -86,13 +132,13 @@
           this.multiSearch(this.multiSearchText)
         }
       },
-      selectAutocompleteItem(item){
+      selectAutocompleteItem(item) {
         this.multiSearchText = item;
       },
-      invokeAutocomplete(q){
+      invokeAutocomplete(q) {
         this.multiSearchText = q;
         return new Promise((resolve, reject) => {
-          this.searchKeyword(q).then(res=>{
+          this.searchKeyword(q).then(res => {
             resolve(res.results);
           });
         });
@@ -117,4 +163,46 @@
   strong, .known-for {
     color: white !important;
   }
+
+  .search-result-actor-wrapper, .search-result-movie-wrapper {
+    display: inline-block;
+  }
+
+  .additional-movie-details strong {
+    color: black !important;
+  }
+
+  .section-header {
+    margin-top: 45px;
+    margin-bottom: -10px;
+    margin-left: 15px;
+    font-size: 46px;
+    font-weight: bold;
+  }
+
+  .search-result-movie-wrapper img {
+    margin-top: 8px;
+    border-radius: 4px;
+    margin-left: 16px;
+  }
+
+  .no-data-available {
+    color: #e91e63;
+    font-size: 18px;
+    font-weight: bold;
+    margin-left: 20px;
+    margin-top: 10px;
+  }
+
+  #search-bar input {
+    height: 45px !important;
+    font-weight: bold !important;
+    font-size: 42px !important;
+  }
+
+  #search-addon {
+    font-size: 24px;
+    font-weight: bold;
+  }
+
 </style>

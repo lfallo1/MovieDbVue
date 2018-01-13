@@ -2,26 +2,26 @@
   <div id="navbar">
     <nav class="navbar navbar-inverse bs-dark">
       <div class="navbar-header">
-        <router-link to="/" class="navbar-brand">Logo</router-link>
+        <router-link to="/" class="navbar-brand">Home</router-link>
       </div>
 
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav">
           <router-link tag="li" to="/advancedsearch"><a>Advanced Search</a></router-link>
         </ul>
-        <ul class="nav navbar-nav navbar-right">
-          <li v-if="auth.username" class="dropdown">
-            <ul>
-              <li class="logout-link" @click="logout()"><a>Logout</a></li>
-            </ul>
-          </li>
-          <li v-else>
-            <router-link to="/login" class="dropdown-toggle navbar-img">
-              Login
-              <img src="http://placehold.it/150x150" class="img-circle" alt="Profile Image"/>
-            </router-link>
-          </li>
-        </ul>
+        <!--<ul class="nav navbar-nav navbar-right">-->
+        <!--<li v-if="auth.username" class="dropdown">-->
+        <!--<ul>-->
+        <!--<li class="logout-link" @click="logout()"><a>Logout</a></li>-->
+        <!--</ul>-->
+        <!--</li>-->
+        <!--<li v-else>-->
+        <!--<router-link to="/signup-login" class="dropdown-toggle navbar-img">-->
+        <!--Login-->
+        <!--<img src="http://placehold.it/150x150" class="img-circle" alt="Profile Image"/>-->
+        <!--</router-link>-->
+        <!--</li>-->
+        <!--</ul>-->
       </div>
     </nav>
   </div>

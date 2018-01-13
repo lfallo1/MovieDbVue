@@ -23,7 +23,7 @@
         </main>
       </div>
       <div class="col-md-9">
-        <app-movie-details :movie="selectedMovie" />
+        <app-movie-details :handler="selectMovie"/>
       </div>
     </div>
     <selected-image-modal/>
@@ -34,12 +34,13 @@
 
   import {mapState, mapActions} from 'vuex'
   import ImageModal from '../Modals/ImageModal.vue'
-  import MovieDetails from './MovieDetails.vue'
+  import MovieDetails from './MovieFullDetails.vue'
+  import {router} from '../../main.js'
 
   export default {
     components: {
       'selected-image-modal': ImageModal,
-      'app-movie-details' : MovieDetails
+      'app-movie-details': MovieDetails
     },
     computed: {
       ...mapState({
@@ -55,6 +56,11 @@
       showImageModal() {
         let image = this.selectedMedia.profile_path;
         this.$modal.show('selected-image-modal', {image: image});
+      },
+      selectMovie(movie) {
+        this.selectMovieById(movie.id).then(() => {
+          router.push('tvmovie-details');
+        })
       }
     }
   }

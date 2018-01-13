@@ -5,11 +5,21 @@ import {
   MOVIES_SET_USAGE,
   MOVIES_ADVANCEDSEARCH_SET_OPTIONS,
   MOVIES_ADVANCEDSEARCH_SET_RESULTS,
-  MOVIES_SET_MOVIE
+  MOVIES_SET_MOVIE,
+  MOVIES_SET_ACTORS_SEARCH_RESULTS,
+  MOVIES_ADVANCEDSEARCH_SET_MODE,
+  MOVIES_TOGGLE_FILTER_REGION,
+  MOVIES_VIEW_MORE_RECOMMENDED,
+  MOVIES_VIEW_MORE_SIMILAR
 } from './mutation-types.js';
 import {HTTP} from '../../http.js';
 
 const api_key = '21daf02c31d8c5f60b02897088a9aa87';
+
+const ADVANCED_SEARCH_MODES = {
+  movies: 'movie',
+  tv: 'tv'
+}
 
 export default {
   namespaced: true,
@@ -37,6 +47,8 @@ export default {
       primary_release_year: {value: 0, q: 'primary_release_year'},
       primary_release_date_gte: {value: null, q: 'primary_release_date.gte'},
       primary_release_date_lte: {value: null, q: 'primary_release_date.lte'},
+      air_date_gte: {value: null, q: 'air_date.gte'},
+      air_date_lte: {value: null, q: 'air_date.lte'},
       vote_count_gte: {value: 0, q: 'vote_count.gte'},
       vote_count_lte: {value: 0, q: 'vote_count.lte'},
       vote_average_gte: {value: 6.0, q: 'vote_average.gte'},
@@ -48,16 +60,27 @@ export default {
       without_keywords: {value: '', q: 'without_keywords'},
       with_people: {value: '', q: 'with_people'},
     },
-    advancedSearchResults: []
+    advancedSearchResults: [],
+    advancedSearchResultMode: ADVANCED_SEARCH_MODES.movies,
+    searchActorsResults: [],
+    filterRegion: true
   },
   mutations: {
-    [MOVIES_SET_MOVIE](state, movie){
+    [MOVIES_SET_MOVIE](state, movie) {
       state.selectedMovie = movie;
     },
     [MOVIES_SET_SEARCH_RESULTS](state, results) {
-      state.multiSearchResults.movies = results.movies;
-      state.multiSearchResults.actors = results.actors;
-      state.multiSearchResults.tvShows = results.tvShows;
+      if (results.movies) {
+        state.multiSearchResults.movies = results.movies;
+      }
+
+      if (results.actors) {
+        state.multiSearchResults.actors = results.actors;
+      }
+
+      if (results.tvShows) {
+        state.multiSearchResults.tvShows = results.tvShows;
+      }
     },
     [MOVIES_SET_NOW_PLAYING_MOVIES](state, movies) {
       state.nowPlayingMovies = movies;
@@ -65,43 +88,99 @@ export default {
     [MOVIES_SET_SELECTED_MEDIA](state, media) {
       state.selectedMedia = media;
     },
+    [MOVIES_SET_ACTORS_SEARCH_RESULTS](state, actors) {
+      state.searchActorsResults = actors;
+    },
     [MOVIES_SET_USAGE](state, usage) {
       state.usage = usage;
     },
     [MOVIES_ADVANCEDSEARCH_SET_OPTIONS](state, searchOptions) {
-      for (var option in state.advancedSearchOptions) {
-        if (searchOptions[option]) {
-          state.advancedSearchOptions[option].value = searchOptions[option];
-        } else{
-          state.advancedSearchOptions[option].value = null;
-        }
+      for (var option in searchOptions) {
+        state.advancedSearchOptions[option].value = searchOptions[option];
       }
+    },
+    [MOVIES_ADVANCEDSEARCH_SET_MODE](state, mode) {
+      state.advancedSearchResultMode = mode;
+    },
+    [MOVIES_TOGGLE_FILTER_REGION](state) {
+      state.filterRegion = !state.filterRegion;
     },
     [MOVIES_ADVANCEDSEARCH_SET_RESULTS](state, searchResults) {
       state.advancedSearchResults = searchResults;
     }
   },
   actions: {
-    selectMovieById({commit}, id){
+    selectMovieById({commit}, id) {
       commit(MOVIES_SET_MOVIE, {});
       HTTP.get(`/movie/${id}?api_key=${api_key}`).then(movie => {
 
-        HTTP.get(`/movie/${id}/credits?api_key=${api_key}`).then(res => {
+        const promises = [
+          HTTP.get(`/movie/${id}/credits?api_key=${api_key}`),
+          HTTP.get(`/movie/${id}/similar?api_key=${api_key}`),
+          HTTP.get(`/movie/${id}/recommendations?api_key=${api_key}`)
+        ];
+
+        Promise.all(promises).then(res => {
+
+          //credits
+          movie.actors = res[0].cast;
+
+          //similar movies
+          movie.similar = {
+            results: res[1].results,
+            page: 1,
+            finished: res[1].results.length == res[1].total_results
+          };
+
+          //recommended movies
+          movie.recommendations = {
+            results: res[2].results,
+            page: 1,
+            finished: res[2].results.length == res[2].total_results
+          };
+
+          commit(MOVIES_SET_MOVIE, movie);
+        });
+
+      });
+    },
+    selectTvShowById({commit}, id) {
+      commit(MOVIES_SET_MOVIE, {});
+      HTTP.get(`/tv/${id}?api_key=${api_key}`).then(movie => {
+
+        HTTP.get(`/tv/${id}/credits?api_key=${api_key}`).then(res => {
           movie.actors = res.cast;
           commit(MOVIES_SET_MOVIE, movie);
         });
 
       });
     },
+    viewMoreRecommended({commit, state}, id) {
+      const url = `/movie/${id}/recommendations?api_key=${api_key}&page=${state.selectedMovie.recommendations.page + 1}`;
+      HTTP.get(url).then(res => {
+        state.selectedMovie.recommendations.results = state.selectedMovie.recommendations.results.concat(res.results);
+        state.selectedMovie.recommendations.page++;
+        state.selectedMovie.recommendations.finished = res.results.length == res.total_results
+      });
+    },
+    viewMoreSimilar({commit, state}, id) {
+      const url = `/movie/${id}/similar?api_key=${api_key}&page=${state.selectedMovie.similar.page + 1}`;
+      HTTP.get(url).then(res => {
+        state.selectedMovie.similar.results = state.selectedMovie.similar.results.concat(res.results);
+        state.selectedMovie.similar.page++;
+        state.selectedMovie.similar.finished = res.results.length == res.total_results;
+      });
+    },
     resetAdvancedSearch({dispatch}, resetToDefault) {
-      if(resetToDefault) {
+      if (resetToDefault) {
         //when resetting to the default options
         dispatch('setAdvancedSearchOptions', {
-          sort_by: '',
           page: 1,
           primary_release_year: 0,
           primary_release_date_gte: null,
           primary_release_date_lte: null,
+          air_date_gte: null,
+          air_date_lte: null,
           vote_count_gte: 0,
           vote_count_lte: 0,
           vote_average_gte: 6.0,
@@ -114,7 +193,7 @@ export default {
           with_people: '',
           sort_by: 'vote_average.desc'
         });
-      } else{
+      } else {
         //when clearing all options
         dispatch('setAdvancedSearchOptions', {
           sort_by: '',
@@ -122,6 +201,8 @@ export default {
           primary_release_year: 0,
           primary_release_date_gte: null,
           primary_release_date_lte: null,
+          air_date_gte: null,
+          air_date_lte: null,
           vote_count_gte: 0,
           vote_count_lte: 0,
           vote_average_gte: 0,
@@ -132,26 +213,44 @@ export default {
           with_keywords: '',
           without_keywords: '',
           with_people: '',
-          sort_by: ''
         });
       }
     },
-    setAdvancedSearchOptions({commit}, searchOptions) {
+    setAdvancedSearchResults({commit}, results) {
+      commit(MOVIES_ADVANCEDSEARCH_SET_RESULTS, results);
+    },
+    setAdvancedSearchMode({commit}, mode) {
+      commit(MOVIES_ADVANCEDSEARCH_SET_MODE, mode);
+    },
+    toggleFilterRegion({commit}) {
+      commit(MOVIES_TOGGLE_FILTER_REGION);
+    },
+    setAdvancedSearchOptions({commit, state}, searchOptions) {
+      if (searchOptions.searchMode) {
+        state.advancedSearchResultMode = searchOptions.searchMode;
+      }
       commit(MOVIES_ADVANCEDSEARCH_SET_OPTIONS, searchOptions);
     },
     advancedSearch({commit, state}) {
-      let url = `/discover/movie?api_key=${api_key}`;
+      let url = `/discover/${state.advancedSearchResultMode}?api_key=${api_key}`;
+      if (state.filterRegion) {
+        url += '&with_original_language=en';
+      }
       for (var prop in state.advancedSearchOptions) {
         const obj = state.advancedSearchOptions[prop];
         url += obj.value ? `&${obj.q}=${obj.value}` : '';
       }
 
       HTTP.get(url).then(res => {
+
+        //add the media_type prop
+        res.results.forEach(r => r.media_type = state.advancedSearchResultMode === ADVANCED_SEARCH_MODES.movies ? 'movie' : 'tv');
+
         let results = [];
 
-        if(state.advancedSearchOptions.page.value > 1){
+        if (state.advancedSearchOptions.page.value > 1) {
           results = state.advancedSearchResults.concat(res.results);
-        } else{
+        } else {
           results = res.results;
         }
 
@@ -166,12 +265,28 @@ export default {
         res.results.forEach(r => r.media_type = 'person');
         commit(MOVIES_SET_SEARCH_RESULTS, {actors: res.results});
       });
+
+      //movies
+      HTTP.get(`/search/movie?api_key=${api_key}&query=${query}`).then(res => {
+        res.results.forEach(r => r.media_type = 'person');
+        commit(MOVIES_SET_SEARCH_RESULTS, {movies: res.results});
+      });
+
+      //tv shows
+      HTTP.get(`/search/tv?api_key=${api_key}&query=${query}`).then(res => {
+        res.results.forEach(r => r.media_type = 'person');
+        commit(MOVIES_SET_SEARCH_RESULTS, {tvShows: res.results});
+      });
     },
     loadNowPlaying({commit}) {
       commit(MOVIES_SET_NOW_PLAYING_MOVIES, []);
       HTTP.get(`/movie/now_playing?api_key=${api_key}`).then(res => {
         commit(MOVIES_SET_NOW_PLAYING_MOVIES, res.results);
       });
+    },
+    clearSelectedMedia({commit}) {
+      commit(MOVIES_SET_SELECTED_MEDIA, false);
+      commit(MOVIES_SET_MOVIE, {});
     },
     setSelectedMedia({commit}, media) {
       return new Promise((resolve, reject) => {
@@ -181,18 +296,20 @@ export default {
             commit(MOVIES_SET_SELECTED_MEDIA, data);
             resolve();
           }, err => reject());
-        } else {
-          HTTP.get(`/movie/${media.id}/credits?api_key=${api_key}`).then(res => {
-            media.actors = res.cast;
-            commit(MOVIES_SET_SELECTED_MEDIA, media);
-            resolve();
-          }, err => reject());
         }
       });
     },
-    searchKeyword({}, text){
-      return new Promise((resolve, reject) =>{
-        HTTP.get(`/search/keyword?query=${text}&api_key=${api_key}`).then(data =>{
+    searchActors({commit}, text) {
+      HTTP.get(`/search/person?api_key=${api_key}&query=${text}`).then(res => {
+        commit(MOVIES_SET_ACTORS_SEARCH_RESULTS, res.results);
+      });
+    },
+    setSearchActorsResults({commit}, actors) {
+      commit(MOVIES_SET_ACTORS_SEARCH_RESULTS, actors);
+    },
+    searchKeyword({}, text) {
+      return new Promise((resolve, reject) => {
+        HTTP.get(`/search/keyword?query=${text}&api_key=${api_key}`).then(data => {
           resolve(data);
         });
       });

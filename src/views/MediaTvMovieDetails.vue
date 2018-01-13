@@ -1,27 +1,25 @@
 <template>
   <div>
-    <div v-if="selectedMedia.media_type=='person'">
-      <app-actor-details/>
-    </div>
+    <app-movie-full-details/>
   </div>
 </template>
 <script>
 
   import {mapState} from 'vuex';
   import {router} from '../main.js';
-  import ActorDetails from '../components/Movies/ActorDetails.vue';
+  import MovieFullDetails from '../components/Movies/MovieFullDetails.vue';
 
   export default {
     components: {
-      'app-actor-details': ActorDetails
+      'app-movie-full-details': MovieFullDetails
     },
     computed: {
       ...mapState({
-        selectedMedia: state => state.movies.selectedMedia
+        selectedMovie: state => state.movies.selectedMovie
       })
     },
     mounted() {
-      if (!this.selectedMedia) {
+      if (!this.selectedMovie) {
         router.push('/');
         return;
       }

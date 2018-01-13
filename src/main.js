@@ -20,7 +20,6 @@ import 'vue2-autocomplete-js/dist/style/vue2-autocomplete.css'
 
 //components
 import App from './components/App.vue'
-import SelectedMediaModal from './components/Modals/ImageModal.vue'
 
 //register plugins
 Vue.use(BootstrapVue);
@@ -28,9 +27,6 @@ Vue.use(VueMaterial);
 Vue.use(Toasted);
 Vue.use(VueRouter);
 Vue.use(VModal, {dialog: true});
-
-//register global components
-// Vue.component('selected-media-modal', SelectedMediaModal);
 
 //optional eventBus
 export const eventBus = new Vue();

@@ -1,4 +1,112 @@
-.autocomplete ul{
+.scrollable-row {
+  margin-top: 15px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: auto;
+  white-space: nowrap;
+}
+
+#search-options .form-group input {
+  font-size: 24px !important;
+}
+
+#search-options .vue-slider-tooltip {
+  font-size: 24px;
+}
+
+#search-options .vue-slider {
+  height: 16px !important;
+}
+
+#search-options .vue-slider-dot {
+  width: 45px !important;;
+  height: 45px !important;
+  margin-top: -9px;
+}
+
+.autocomplete ul {
   margin-top: 35px !important;
   left: 0 !important;
+}
+
+#view-more {
+  margin-top: 30px;
+  text-align: center;
+}
+
+#view-more button {
+  width: 80%;
+  font-size: 34px;
+  font-weight: bolder;
+}
+
+a.actor-search-result-item {
+  color: #1b6d85;
+  font-weight: bolder;
+}
+
+a.actor-search-result-item:hover {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+input.autocomplete-input {
+  height: 46px !important;
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.scrollable-row img {
+  margin-top: 8px;
+  margin-left: 12px;
+  border-radius: 6px;
+}
+
+div.extra-space {
+  margin-bottom: 50px !important;
+}
+
+.keyword-item input {
+  display: inline;
+}
+
+.keyword-item span {
+  font-size: 22px;
+}
+
+.keyword-item span:hover {
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.add-keyword {
+  margin-top: 4px;
+  width: 100%;
+}
+
+#advanced-search-button {
+  font-size: 22px;
+  text-align: center;
+}
+
+#advanced-search-button .btn {
+  font-size: 22px;
+  width: 50%;
+  font-weight: bold;
+  margin-left: 25px;
+}
+
+#filter-region {
+  text-align: center;
+  padding-top: 60px;
+}
+
+#filter-region button {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+#filter-region span {
+  font-size: 16px;
+  font-style: italic;
 }
