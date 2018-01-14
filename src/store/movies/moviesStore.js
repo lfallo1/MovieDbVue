@@ -194,7 +194,7 @@ export default {
       const type = media.original_title ? 'movie' : 'tv';
       const url = `/${widthType}/${id}/recommendations?api_key=${api_key}&page=${state.selectedMovie.recommendations.page + 1}`;
       HTTP.get(url).then(res => {
-        state.selectedMovie.recommendations.forEach(r => r.media_type = type);
+        res.results.forEach(r => r.media_type = type);
         state.selectedMovie.recommendations.results = state.selectedMovie.recommendations.results.concat(res.results);
         state.selectedMovie.recommendations.page++;
         state.selectedMovie.recommendations.finished = res.results.length == res.total_results
@@ -205,7 +205,7 @@ export default {
       const type = media.original_title ? 'movie' : 'tv';
       const url = `/${type}/${id}/similar?api_key=${api_key}&page=${state.selectedMovie.similar.page + 1}`;
       HTTP.get(url).then(res => {
-        state.selectedMovie.similar.forEach(r => r.media_type = type);
+        res.results.forEach(r => r.media_type = type);
         state.selectedMovie.similar.results = state.selectedMovie.similar.results.concat(res.results);
         state.selectedMovie.similar.page++;
         state.selectedMovie.similar.finished = res.results.length == res.total_results;
