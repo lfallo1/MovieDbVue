@@ -1,6 +1,6 @@
 # moviedbvue
 
-> A Vue.js project
+> Movie / TV show search engine written using VueJs & integrating themoviedb API. Site his hosted on AWS S3 at http://com.lancefallon.moviedb.s3-website-us-east-1.amazonaws.com/
 
 ## Build Setup
 
